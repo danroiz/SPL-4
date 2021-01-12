@@ -1,4 +1,4 @@
-from DTO import Vaccine, Supplier, Clinic, Logistic
+from DTO import Supplier, Clinic, Logistic
 
 
 class _Vaccines:
@@ -9,13 +9,6 @@ class _Vaccines:
         self._conn.execute("""
                INSERT INTO vaccines (id, date, supplier, quantity) VALUES (?, ?, ?, ?)
            """, [vaccine.id, vaccine.date, vaccine.supplier, vaccine.quantity])
-
-    def find(self, vaccine_id):
-        c = self._conn.cursor()
-        c.execute("""
-            SELECT id, name FROM students WHERE id = ?
-        """, [vaccine_id])
-        return Vaccine(*c.fetchone())
 
     def update_quantity(self, vaccine_id, vaccine_quantity):
         c = self._conn.cursor()
@@ -41,11 +34,11 @@ class _Suppliers:
                INSERT INTO suppliers (id, name, logistic) VALUES (?, ?, ?)
            """, [supplier.id, supplier.name, supplier.logistic])
 
-    def find(self, supplier_id):
+    def find_name(self, supplier_name):
         c = self._conn.cursor()
         c.execute("""
-            SELECT id, name FROM suppliers WHERE id = ?
-        """, [supplier_id])
+            SELECT id, name, logistic FROM suppliers WHERE name = ?
+        """, [supplier_name])
         return Supplier(*c.fetchone())
 
 
@@ -58,14 +51,14 @@ class _Clinics:
                INSERT INTO clinics (id, location, demand, logistic) VALUES (?, ?, ?, ?)
            """, [clinic.id, clinic.location, clinic.demand, clinic.logistic])
 
-    def find(self, clinic_id):
+    def find_by_location(self, clinic_location):
         c = self._conn.cursor()
         c.execute("""
-            SELECT id, name FROM clinics WHERE id = ?
-        """, [clinic_id])
+            SELECT id, location, demand, logistic FROM clinics WHERE location = ?
+        """, [clinic_location])
         return Clinic(*c.fetchone())
 
-    def update_quantity(self, clinic_id, clinic_demand):
+    def update_demand(self, clinic_id, clinic_demand):
         c = self._conn.cursor()
         c.execute("""
                 UPDATE clinics
@@ -85,7 +78,7 @@ class _Logistics:
     def find(self, logistic_id):
         c = self._conn.cursor()
         c.execute("""
-            SELECT id, name FROM clinics WHERE id = ?
+            SELECT id, name, count_sent, count_received FROM logistics WHERE id = ?
         """, [logistic_id])
         return Logistic(*c.fetchone())
 
