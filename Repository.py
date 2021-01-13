@@ -1,8 +1,6 @@
 import atexit
 import sqlite3
-
 from DAO import _Logistics, _Suppliers, _Vaccines, _Clinics
-from DTO import Vaccine
 
 
 class _Repository:
@@ -48,11 +46,8 @@ class _Repository:
     """)
 
     def get_next_vaccine_id(self):
-        c = self._conn.cursor()
-        last_vaccine = c.execute("""
-        SELECT * FROM vaccines WHERE ID = (SELECT MAX(ID) FROM vaccines);
-        """).fetchone()
-        return Vaccine(*last_vaccine).id + 1
+        vaccine = self.vaccines.get_last_vaccine()
+        return vaccine.id + 1
 
     def get_supplier_info(self, name):
         supplier = self.suppliers.find_name(name)
@@ -66,17 +61,12 @@ class _Repository:
         logistic = self.logistics.find(logistic_id)
         self.logistics.update_count_sent(logistic_id, logistic.count_sent+amount)
 
-    def get_oldest_vaccine(self):
-        c = self._conn.cursor()
-        vaccine = c.execute("""SELECT * FROM vaccines WHERE date = (SELECT MIN(date) FROM vaccines);""").fetchone()
-        return Vaccine(*vaccine)
-
     def get_totals(self):
         c = self._conn.cursor()
-        total_inventory = str(c.execute("""SELECT SUM(quantity) FROM vaccines;""").fetchone()[0])
-        total_demand = str(c.execute("""SELECT SUM(demand) FROM clinics;""").fetchone()[0])
-        total_received = str(c.execute("""SELECT SUM(count_received) FROM logistics;""").fetchone()[0])
-        total_sent = str(c.execute("""SELECT SUM(count_sent) FROM logistics;""").fetchone()[0])
+        total_inventory = self.vaccines.get_total_quantity()
+        total_demand = self.clinics.get_total_demand()
+        total_received = self.logistics.get_total_count_received()
+        total_sent = self.logistics.get_total_count_sent()
         return total_inventory + ',' + total_demand + ',' + total_received + ',' + total_sent
 
 

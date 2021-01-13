@@ -1,4 +1,4 @@
-from DTO import Supplier, Clinic, Logistic
+from DTO import Supplier, Clinic, Logistic, Vaccine
 
 
 class _Vaccines:
@@ -23,6 +23,22 @@ class _Vaccines:
                         DELETE FROM vaccines
                         WHERE id = ({})
                         """.format(vaccine_id))
+
+    def get_total_quantity(self):
+        c = self._conn.cursor()
+        return str(c.execute("""SELECT SUM(quantity) FROM vaccines;""").fetchone()[0])
+
+    def find_oldest_vaccine(self):
+        c = self._conn.cursor()
+        vaccine = c.execute("""SELECT * FROM vaccines WHERE date = (SELECT MIN(date) FROM vaccines);""").fetchone()
+        return Vaccine(*vaccine)
+
+    def get_last_vaccine(self):
+        c = self._conn.cursor()
+        last_vaccine = c.execute("""
+                SELECT * FROM vaccines WHERE ID = (SELECT MAX(ID) FROM vaccines);
+                """).fetchone()
+        return Vaccine(*last_vaccine)
 
 
 class _Suppliers:
@@ -65,6 +81,10 @@ class _Clinics:
                 SET demand = ({}) WHERE id = ({})
                 """.format(clinic_demand, clinic_id))
 
+    def get_total_demand(self):
+        c = self._conn.cursor()
+        return str(c.execute("""SELECT SUM(demand) FROM clinics;""").fetchone()[0])
+
 
 class _Logistics:
     def __init__(self, conn):
@@ -95,3 +115,12 @@ class _Logistics:
                 UPDATE logistics
                 SET count_received = ({}) WHERE id = ({})
                 """.format(logistic_count_received, logistic_id))
+
+    def get_total_count_received(self):
+        c = self._conn.cursor()
+        return str(c.execute("""SELECT SUM(count_received) FROM logistics;""").fetchone()[0])
+
+    def get_total_count_sent(self):
+        c = self._conn.cursor()
+        return str(c.execute("""SELECT SUM(count_sent) FROM logistics;""").fetchone()[0])
+

@@ -1,11 +1,6 @@
+import sys
 from DTO import Vaccine, Supplier, Clinic, Logistic
 from Repository import repo
-import sys
-
-
-def summary_add(log_line):
-    with open('output.txt', 'a') as out:
-        out.write(log_line + '\n')
 
 
 def receive_shipment(supplier_name, amount, date):
@@ -21,7 +16,7 @@ def send_shipment(location, amount):
     repo.clinics.update_demand(clinic.id, clinic.demand - amount)
     repo.update_amount_sent(clinic.logistic, amount)
     while amount > 0:
-        vaccine = repo.get_oldest_vaccine()
+        vaccine = repo.vaccines.find_oldest_vaccine()
         if vaccine.quantity > amount:
             repo.vaccines.update_quantity(vaccine.id, vaccine.quantity - amount)
             amount = 0
@@ -31,7 +26,7 @@ def send_shipment(location, amount):
 
 
 def execute_commands():
-    with open('orders.txt', "r", encoding='utf-8') as file:
+    with open(sys.argv[2], "r", encoding='utf-8') as file, open(sys.argv[3], "w") as out:
         for line in file:
             if line[-1] == '\n':
                 line = line[:-1]
@@ -40,19 +35,17 @@ def execute_commands():
                 receive_shipment(line_list[0], int(line_list[1]), line_list[2])
             elif len(line_list) == 2:
                 send_shipment(line_list[0], int(line_list[1]))
-            summary_add(repo.get_totals())
+            out.write(repo.get_totals() + '\n')
 
 
 def parse_config():
     init = False
-    with open('config.txt', "r", encoding='utf-8') as file:
+    with open(sys.argv[1], "r", encoding='utf-8') as file:
         for line in file:
             if line[-1] == '\n':
                 line = line[:-1]
             line_list = line.split(',')
-            print(line_list)
             if not init:
-                print(line_list[0])
                 vaccines_num = int(line_list[0])
                 suppliers_num = int(line_list[1])
                 clinics_num = int(line_list[2])
@@ -78,6 +71,6 @@ def parse_config():
 
 if __name__ == '__main__':
     repo.create_tables()
-    parse_config()  # sys.argv[1])
+    parse_config()
     execute_commands()
 
