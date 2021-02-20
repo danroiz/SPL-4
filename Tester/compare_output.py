@@ -27,7 +27,6 @@ def compare_logstics(db_true,db_tested):
     tested_db = db_tested.execute("""SELECT log.name, log.count_sent, log.count_received FROM logistics as log""").fetchall()
     return compare(true_db,tested_db,'logistics')
 
-
 def swap_seperators(lst):
     '''
     lst is either a list of lists or a list of tuples.
@@ -57,18 +56,16 @@ def fix_dates(lst):
         lst[j] = nl if isinstance(l,list) else tuple(nl)
     return lst
 
-
 def compare_vaccines(db_true,db_tested):
     true_db = db_true.execute("""SELECT vac.date, vac.quantity, sup.name FROM vaccines as vac
         JOIN suppliers as sup
         on vac.supplier = sup.id""").fetchall()
     true_db = fix_dates(swap_seperators(true_db))
-    tested_db = db_true.execute("""SELECT vac.date, vac.quantity, sup.name FROM vaccines as vac
+    tested_db = db_tested.execute("""SELECT vac.date, vac.quantity, sup.name FROM vaccines as vac
         JOIN suppliers as sup
         on vac.supplier = sup.id""").fetchall()
     tested_db = fix_dates(swap_seperators(tested_db))
     return compare(true_db,tested_db,'vaccines')
-
 
 def compare_clinics(db_true,db_tested):
     true_db = db_true.execute("""SELECT clin.location, clin.demand, log.name FROM clinics as clin
